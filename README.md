@@ -1,3 +1,59 @@
+
+### 使用Docker | 白名单 MTProxy Docker 镜像
+
+该镜像集成了 nginx、mtproxy+tls 实现对流量的伪装，并采用**白名单**模式来应对防火墙的检测
+
+若使用该 Docker 镜像, 就不需要用脚本了，二者二选一，不要搞混了。
+
+**如果没有安装Docker**，一键安装方式：
+
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+```
+
+**创建白名单镜像,默认开启白名单IP段：**
+
+ ```bash
+docker run -d \
+--name mtproxy \
+--restart=always \
+-e domain="cloudflare.com" \
+-p 8080:80 \
+-p 8081:443 \
+ellermister/mtproxy
+ ```
+
+docker 配置好以后直接去日志查看登录链接
+
+
+**镜像默认开启了 IP 段白名单**，如果你不需要可以配置 `ip_white_list="OFF"` 取消：
+
+```bash
+docker run -d \
+--name mtproxy \
+--restart=always \
+-e domain="cloudflare.com" \
+-e secret="548593a9c0688f4f7d9d57377897d964" \
+-e ip_white_list="OFF" \
+-p 8080:80 \
+-p 8443:443 \
+ellermister/mtproxy
+```
+
+`ip_white_list` 选项:
+
+- **OFF**  关闭白名单
+- **IP** 开启 IP 白名单
+- **IPSEG** 开启 IP 段白名单
+
+`secret`指定密钥：如果你想创建已知的密钥，格式为：32位十六进制字符。
+
+**在日志中查看链接的参数配置**：
+
+```bash
+docker logs -f mtproxy
+```
 # mtproxy
 
 这是一个一键安装 MTProxy 代理的绿色脚本，脚本可以在官方版本的 MTProxy 程序和兼容性最强的第三方作者开发的 mtg 程序中进行选择静态安装或者编译，该版本默认支持 Fake TLS 以及 AdTag 配置。
@@ -36,61 +92,6 @@ bash mtproxy.sh
 
  ![mtproxy.sh](https://raw.githubusercontent.com/ellermister/mtproxy/master/mtproxy.jpg)
 
-### 使用Docker | 白名单 MTProxy Docker 镜像
-
-The image integrates nginx and mtproxy+tls to disguise traffic, and uses a whitelist mode to deal with firewall detection.
-
-该镜像集成了 nginx、mtproxy+tls 实现对流量的伪装，并采用**白名单**模式来应对防火墙的检测。
-
-If you use this Docker image, you don't need to use the script, you can choose one of the two, don't mix it up.
-
-若使用该 Docker 镜像, 就不需要用脚本了，二者二选一，不要搞混了。
-
-**如果没有安装Docker**，一键安装方式：
-
-```bash
-curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
-```
-
-**创建白名单镜像：**
-
- ```bash
-docker run -d \
---name mtproxy \
---restart=always \
--e domain="cloudflare.com" \
--p 8080:80 \
--p 8443:443 \
-ellermister/mtproxy
- ```
-**镜像默认开启了 IP 段白名单**，如果你不需要可以配置 `ip_white_list="OFF"` 取消：
-
-```bash
-docker run -d \
---name mtproxy \
---restart=always \
--e domain="cloudflare.com" \
--e secret="548593a9c0688f4f7d9d57377897d964" \
--e ip_white_list="OFF" \
--p 8080:80 \
--p 8443:443 \
-ellermister/mtproxy
-```
-
-`ip_white_list` 选项:
-
-- **OFF**  关闭白名单
-- **IP** 开启 IP 白名单
-- **IPSEG** 开启 IP 段白名单
-
-`secret`指定密钥：如果你想创建已知的密钥，格式为：32位十六进制字符。
-
-**在日志中查看链接的参数配置**：
-
-```bash
-docker logs -f mtproxy
-```
 
 连接端口记得修改为你映射后的外部端口，如上文例子中都是`8443`，在连接时修改端口。
 
